@@ -20,8 +20,7 @@ Fork of client mod Vencord with lots of extra plugins including ReviewDB
 
 ## Installing / Uninstalling
 
-Get installer from https://github.com/StupidityDB/VencordPlusInstaller/releases/latest
-Close Discord, hit install and you should be ready
+[![Download and run the Installer](https://img.shields.io/github/v/release/StupidityDB/VencordPlusInstaller?label=Download%20Vencord%2B%20Installer&style=for-the-badge)](https://github.com/StupidityDB/VencordPlusInstaller#vencord-installer)
 
 ## Disclaimer
 
