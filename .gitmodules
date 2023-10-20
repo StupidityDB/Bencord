@@ -1,0 +1,6 @@
+[submodule "git/vc-message-logger-enhanced"]
+	path = src/userplugins/vc-message-logger-enhanced
+	url = https://github.com/syncxv/vc-message-logger-enhanced
+[submodule "git/vc-gif-collections"]
+	path = src/userplugins/vc-gif-collections
+	url = https://github.com/syncxv/vc-gif-collections
