@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+*/
 
 import "../suppressExperimentalWarnings.js";
 import "../checkNodeVersion.js";
@@ -31,28 +31,21 @@ import { getPluginTarget } from "../utils.mjs";
 
 export const VERSION = PackageJSON.version;
 // https://reproducible-builds.org/docs/source-date-epoch/
-export const BUILD_TIMESTAMP =
-    Number(process.env.SOURCE_DATE_EPOCH) || Date.now();
+export const BUILD_TIMESTAMP = Number(process.env.SOURCE_DATE_EPOCH) || Date.now();
 export const watch = process.argv.includes("--watch");
-export const isStandalone = JSON.stringify(
-    process.argv.includes("--standalone")
-);
-export const updaterDisabled = JSON.stringify(
-    process.argv.includes("--disable-updater")
-);
-export const gitHash =
-    process.env.VENCORD_HASH ||
-    execSync("git rev-parse --short HEAD", { encoding: "utf-8" }).trim();
+export const isStandalone = JSON.stringify(process.argv.includes("--standalone"));
+export const updaterDisabled = JSON.stringify(process.argv.includes("--disable-updater"));
+export const gitHash = process.env.VENCORD_HASH || execSync("git rev-parse --short HEAD", { encoding: "utf-8" }).trim();
 export const banner = {
     js: `
 // Vencord ${gitHash}
 // Standalone: ${isStandalone}
 // Platform: ${isStandalone === "false" ? process.platform : "Universal"}
 // Updater disabled: ${updaterDisabled}
-`.trim(),
+`.trim()
 };
 
-const isWeb = process.argv.slice(0, 2).some((f) => f.endsWith("buildWeb.mjs"));
+const isWeb = process.argv.slice(0, 2).some(f => f.endsWith("buildWeb.mjs"));
 
 // https://github.com/evanw/esbuild/issues/619#issuecomment-751995294
 /**
@@ -62,35 +55,26 @@ export const makeAllPackagesExternalPlugin = {
     name: "make-all-packages-external",
     setup(build) {
         const filter = /^[^./]|^\.[^./]|^\.\.[^/]/; // Must not start with "/" or "./" or "../"
-        build.onResolve({ filter }, (args) => ({
-            path: args.path,
-            external: true,
-        }));
+        build.onResolve({ filter }, args => ({ path: args.path, external: true }));
     },
 };
 
 /**
  * @type {(kind: "web" | "discordDesktop" | "vencordDesktop") => import("esbuild").Plugin}
  */
-export const globPlugins = (kind) => ({
+export const globPlugins = kind => ({
     name: "glob-plugins",
-    setup: (build) => {
+    setup: build => {
         const filter = /^~plugins$/;
-        build.onResolve({ filter }, (args) => {
+        build.onResolve({ filter }, args => {
             return {
                 namespace: "import-plugins",
-                path: args.path,
+                path: args.path
             };
         });
 
         build.onLoad({ filter, namespace: "import-plugins" }, async () => {
-            const pluginDirs = [
-                "plugins/_api",
-                "plugins/_core",
-                "plugins",
-                "userplugins",
-                "plusplugins",
-            ];
+            const pluginDirs = ["plugins/_api", "plugins/_core", "plugins", "userplugins", "plusplugins"];
             let code = "";
             let plugins = "\n";
             let i = 0;
@@ -104,26 +88,14 @@ export const globPlugins = (kind) => ({
                     const target = getPluginTarget(file);
                     if (target) {
                         if (target === "dev" && !watch) continue;
-                        if (target === "web" && kind === "discordDesktop")
-                            continue;
+                        if (target === "web" && kind === "discordDesktop") continue;
                         if (target === "desktop" && kind === "web") continue;
-                        if (
-                            target === "discordDesktop" &&
-                            kind !== "discordDesktop"
-                        )
-                            continue;
-                        if (
-                            target === "vencordDesktop" &&
-                            kind !== "vencordDesktop"
-                        )
-                            continue;
+                        if (target === "discordDesktop" && kind !== "discordDesktop") continue;
+                        if (target === "vencordDesktop" && kind !== "vencordDesktop") continue;
                     }
 
                     const mod = `p${i}`;
-                    code += `import ${mod} from "./${dir}/${file.replace(
-                        /\.tsx?$/,
-                        ""
-                    )}";\n`;
+                    code += `import ${mod} from "./${dir}/${file.replace(/\.tsx?$/, "")}";\n`;
                     plugins += `[${mod}.name]:${mod},\n`;
                     i++;
                 }
@@ -131,10 +103,10 @@ export const globPlugins = (kind) => ({
             code += `export default {${plugins}};`;
             return {
                 contents: code,
-                resolveDir: "./src",
+                resolveDir: "./src"
             };
         });
-    },
+    }
 });
 
 /**
@@ -142,16 +114,15 @@ export const globPlugins = (kind) => ({
  */
 export const gitHashPlugin = {
     name: "git-hash-plugin",
-    setup: (build) => {
+    setup: build => {
         const filter = /^~git-hash$/;
-        build.onResolve({ filter }, (args) => ({
-            namespace: "git-hash",
-            path: args.path,
+        build.onResolve({ filter }, args => ({
+            namespace: "git-hash", path: args.path
         }));
         build.onLoad({ filter, namespace: "git-hash" }, () => ({
-            contents: `export default "${gitHash}"`,
+            contents: `export default "${gitHash}"`
         }));
-    },
+    }
 };
 
 /**
@@ -159,20 +130,16 @@ export const gitHashPlugin = {
  */
 export const gitRemotePlugin = {
     name: "git-remote-plugin",
-    setup: (build) => {
+    setup: build => {
         const filter = /^~git-remote$/;
-        build.onResolve({ filter }, (args) => ({
-            namespace: "git-remote",
-            path: args.path,
+        build.onResolve({ filter }, args => ({
+            namespace: "git-remote", path: args.path
         }));
         build.onLoad({ filter, namespace: "git-remote" }, async () => {
             let remote = process.env.VENCORD_REMOTE;
             if (!remote) {
-                const res = await promisify(exec)("git remote get-url origin", {
-                    encoding: "utf-8",
-                });
-                remote = res.stdout
-                    .trim()
+                const res = await promisify(exec)("git remote get-url origin", { encoding: "utf-8" });
+                remote = res.stdout.trim()
                     .replace("https://github.com/", "")
                     .replace("git@github.com:", "")
                     .replace(/.git$/, "");
@@ -180,7 +147,7 @@ export const gitRemotePlugin = {
 
             return { contents: `export default "${remote}"` };
         });
-    },
+    }
 };
 
 /**
@@ -188,30 +155,22 @@ export const gitRemotePlugin = {
  */
 export const fileIncludePlugin = {
     name: "file-include-plugin",
-    setup: (build) => {
+    setup: build => {
         const filter = /^~fileContent\/.+$/;
-        build.onResolve({ filter }, (args) => ({
+        build.onResolve({ filter }, args => ({
             namespace: "include-file",
             path: args.path,
             pluginData: {
-                path: join(
-                    args.resolveDir,
-                    args.path.slice("include-file/".length)
-                ),
-            },
-        }));
-        build.onLoad(
-            { filter, namespace: "include-file" },
-            async ({ pluginData: { path } }) => {
-                const [name, format] = path.split(";");
-                return {
-                    contents: `export default ${JSON.stringify(
-                        await readFile(name, format ?? "utf-8")
-                    )}`,
-                };
+                path: join(args.resolveDir, args.path.slice("include-file/".length))
             }
-        );
-    },
+        }));
+        build.onLoad({ filter, namespace: "include-file" }, async ({ pluginData: { path } }) => {
+            const [name, format] = path.split(";");
+            return {
+                contents: `export default ${JSON.stringify(await readFile(name, format ?? "utf-8"))}`
+            };
+        });
+    }
 };
 
 const styleModule = readFileSync("./scripts/build/module/style.js", "utf-8");
@@ -221,34 +180,22 @@ const styleModule = readFileSync("./scripts/build/module/style.js", "utf-8");
 export const stylePlugin = {
     name: "style-plugin",
     setup: ({ onResolve, onLoad }) => {
-        onResolve(
-            { filter: /\.css\?managed$/, namespace: "file" },
-            ({ path, resolveDir }) => ({
-                path: relative(
-                    process.cwd(),
-                    join(resolveDir, path.replace("?managed", ""))
-                ),
-                namespace: "managed-style",
-            })
-        );
-        onLoad(
-            { filter: /\.css$/, namespace: "managed-style" },
-            async ({ path }) => {
-                const css = await readFile(path, "utf-8");
-                const name = relative(process.cwd(), path).replaceAll(
-                    "\\",
-                    "/"
-                );
+        onResolve({ filter: /\.css\?managed$/, namespace: "file" }, ({ path, resolveDir }) => ({
+            path: relative(process.cwd(), join(resolveDir, path.replace("?managed", ""))),
+            namespace: "managed-style",
+        }));
+        onLoad({ filter: /\.css$/, namespace: "managed-style" }, async ({ path }) => {
+            const css = await readFile(path, "utf-8");
+            const name = relative(process.cwd(), path).replaceAll("\\", "/");
 
-                return {
-                    loader: "js",
-                    contents: styleModule
-                        .replaceAll("STYLE_SOURCE", JSON.stringify(css))
-                        .replaceAll("STYLE_NAME", JSON.stringify(name)),
-                };
-            }
-        );
-    },
+            return {
+                loader: "js",
+                contents: styleModule
+                    .replaceAll("STYLE_SOURCE", JSON.stringify(css))
+                    .replaceAll("STYLE_NAME", JSON.stringify(name))
+            };
+        });
+    }
 };
 
 /**
@@ -268,5 +215,5 @@ export const commonOpts = {
     jsxFactory: "VencordCreateElement",
     jsxFragment: "VencordFragment",
     // Work around https://github.com/evanw/esbuild/issues/2460
-    tsconfig: "./scripts/build/tsconfig.esbuild.json",
+    tsconfig: "./scripts/build/tsconfig.esbuild.json"
 };
