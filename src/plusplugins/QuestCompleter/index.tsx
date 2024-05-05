@@ -1,24 +1,11 @@
 /*
- * Vencord, a modification for Discord's desktop app
+ * Vencord, a Discord client mod
  * Copyright (c) 2023 Vendicated and contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 
-
-import { findByProps } from "@webpack";
 import definePlugin from "@utils/types";
+import { findByProps } from "@webpack";
 import { Text } from "@webpack/common";
 import { showNotification } from "@api/Notifications";
 import { localStorage } from "@utils/localStorage";
@@ -42,6 +29,9 @@ let interval;
 let quest;
 let questHeroBarUrl;
 let ImagesConfig = {};
+let getCurrentUserActiveStream;
+let StreamingUtils;
+let getParticipants;
 
 export default definePlugin({
     name: "QuestCompleter",
@@ -93,8 +83,13 @@ export default definePlugin({
         if (!currentStream) {
             shouldDisable = true;
         }
+
+        if (!getParticipants) {
+            getParticipants = findByProps("getParticipants").getParticipants
+        }
+
         if (currentStream) {
-            if (!findByProps("getParticipants").getParticipants(currentStream.channelId).filter(participent => participent.user.id !== window.currentUserId).length) {
+            if (!getParticipants(currentStream.channelId).filter(participent => participent.user.id !== window.currentUserId).length) {
                 shouldDisable = true;
             }
             if (currentStream?.ownerId !== window.currentUserId) {
@@ -142,6 +137,12 @@ export default definePlugin({
     openCompleteQuestUI() {
         // check if user is sharing screen and there is someone that is watching the stream 
 
+        if (!StreamingUtils) {
+            StreamingUtils = findByProps("encodeStreamKey")
+        }
+        if (!getCurrentUserActiveStream) {
+            const { getCurrentUserActiveStream } = findByProps("getCurrentUserActiveStream")
+        }
         const currentStream: Stream | null = findByProps("getCurrentUserActiveStream").getCurrentUserActiveStream();
         const encodedStreamKey = findByProps("encodeStreamKey").encodeStreamKey(currentStream);
         quest = getLeftQuests();
@@ -152,7 +153,7 @@ export default definePlugin({
 
         const heartBeat = async () => {
             const HTTP = findByProps("HTTP", "getAPIBaseURL").HTTP; // rest api module
-            let res = findByProps("sendHeartbeat").sendHeartbeat({ questId: quest.id, streamKey: encodedStreamKey });
+            const res = findByProps("sendHeartbeat").sendHeartbeat({ questId: quest.id, streamKey: encodedStreamKey });
         };
 
         heartBeat();
@@ -161,15 +162,16 @@ export default definePlugin({
         return;
     },
     flux: {
-        STREAM_STOP: (event) => {
-            const stream: Stream = findByProps("encodeStreamKey").decodeStreamKey(event.streamKey);
+        STREAM_STOP: event => {
+
+            const stream: Stream = StreamingUtils.decodeStreamKey(event.streamKey);
             // we check if the stream is by the current user id so we do not clear the interval without any reason.
             if (stream.ownerId === window.currentUserId && interval) {
                 clearInterval(interval);
                 interval = null;
             }
         },
-        QUESTS_SEND_HEARTBEAT_FAILURE: (event) => {
+        QUESTS_SEND_HEARTBEAT_FAILURE: event => {
             showNotification(
                 {
                     title: "Couldn't start Completing Quest",
@@ -180,7 +182,7 @@ export default definePlugin({
             clearInterval(interval);
             interval = null;
         },
-        QUESTS_SEND_HEARTBEAT_SUCCESS: (event) => {
+        QUESTS_SEND_HEARTBEAT_SUCCESS: event => {
 
             const a = event.userStatus.streamProgressSeconds * 100;
             const b = quest.config.streamDurationRequirementMinutes * 60;
