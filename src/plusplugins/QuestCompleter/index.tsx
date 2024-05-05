@@ -5,10 +5,11 @@
  */
 
 import { findByProps } from "@webpack";
-import { Text } from "@webpack/common";
-import { showNotification } from "@api/Notifications";
 import { localStorage } from "@utils/localStorage";
+import { showNotification } from "@api/Notifications";
+import { Text } from "@webpack/common";
 import definePlugin from "@utils/types";
+
 
 interface Stream {
     streamType: string;
@@ -103,8 +104,7 @@ export default definePlugin({
 
 
         const ToolTipButton = findByProps("CenterControlButton").default;
-        // eslint-disable-line
-        const QuestsIcon = () => (props) => (
+        const QuestsIcon = _ => (props) => (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -118,7 +118,6 @@ export default definePlugin({
                 ></path>
             </svg>
         );
-                
         return (
             <>
                 <ToolTipButton
