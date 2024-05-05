@@ -37,10 +37,10 @@ let getParticipants;
 export default definePlugin({
     name: "QuestCompleter",
     description: "A plugin to complete quests without having the game.",
-    authors: [ {
+    authors: [{
         name: "Happy enderman",
         id: 1083437693347827764n
-    },{
+    }, {
         name: "SerStars",
         id: 861631850681729045n
     }],
@@ -100,9 +100,6 @@ export default definePlugin({
         if (!getLeftQuests()) {
             shouldDisable = true;
         }
-
-
-
         const ToolTipButton = findByProps("CenterControlButton").default;
         const QuestsIcon = _ => (props) => (
             <svg
@@ -134,12 +131,8 @@ export default definePlugin({
     },
     openCompleteQuestUI() {
         // check if user is sharing screen and there is someone that is watching the stream 
-        if (!StreamingUtils) {
-            StreamingUtils = findByProps("encodeStreamKey");
-        }
-        if (!getCurrentUserActiveStream) {
-            const { getCurrentUserActiveStream } = findByProps("getCurrentUserActiveStream");
-        }
+        if (!StreamingUtils) StreamingUtils = findByProps("encodeStreamKey");
+        if (!getCurrentUserActiveStream) { const { getCurrentUserActiveStream } = findByProps("getCurrentUserActiveStream"); }
         const currentStream: Stream | null = findByProps("getCurrentUserActiveStream").getCurrentUserActiveStream();
         const encodedStreamKey = findByProps("encodeStreamKey").encodeStreamKey(currentStream);
         quest = getLeftQuests();
@@ -148,7 +141,7 @@ export default definePlugin({
             image: findByProps("getHeroAssetUrl").getHeroAssetUrl(quest)
         };
 
-        const heartBeat = async () => {
+        const heartBeat = (_ = null) => {
             const { HTTP } = findByProps("HTTP", "getAPIBaseURL"); // rest api module
             const res = findByProps("sendHeartbeat").sendHeartbeat({ questId: quest.id, streamKey: encodedStreamKey });
         };
