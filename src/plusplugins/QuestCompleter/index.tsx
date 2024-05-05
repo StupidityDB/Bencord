@@ -17,7 +17,6 @@
 */
 
 
-import { Devs } from "@utils/constants";
 import { findByProps } from "@webpack";
 import definePlugin from "@utils/types";
 import { Text } from "@webpack/common";
