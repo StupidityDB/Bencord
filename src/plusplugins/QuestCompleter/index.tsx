@@ -136,10 +136,10 @@ export default definePlugin({
     openCompleteQuestUI() {
         // check if user is sharing screen and there is someone that is watching the stream 
         if (!StreamingUtils) {
-            StreamingUtils = findByProps("encodeStreamKey")
+            StreamingUtils = findByProps("encodeStreamKey");
         }
         if (!getCurrentUserActiveStream) {
-            const { getCurrentUserActiveStream } = findByProps("getCurrentUserActiveStream")
+            const { getCurrentUserActiveStream } = findByProps("getCurrentUserActiveStream");
         }
         const currentStream: Stream | null = findByProps("getCurrentUserActiveStream").getCurrentUserActiveStream();
         const encodedStreamKey = findByProps("encodeStreamKey").encodeStreamKey(currentStream);
@@ -150,7 +150,7 @@ export default definePlugin({
         };
 
         const heartBeat = async () => {
-            const HTTP = findByProps("HTTP", "getAPIBaseURL").HTTP; // rest api module
+            const { HTTP } = findByProps("HTTP", "getAPIBaseURL"); // rest api module
             const res = findByProps("sendHeartbeat").sendHeartbeat({ questId: quest.id, streamKey: encodedStreamKey });
         };
         heartBeat();
