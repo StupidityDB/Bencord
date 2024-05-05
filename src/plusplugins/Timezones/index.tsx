@@ -29,9 +29,9 @@ let interval;
 let quest;
 let questHeroBarUrl;
 let ImagesConfig = {};
-const getCurrentUserActiveStream = null; 
-const StreamingUtils = null; 
-const getParticipants = null;
+let getCurrentUserActiveStream;
+let StreamingUtils;
+let getParticipants;
 
 export default definePlugin({
     name: "QuestCompleter",
