@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import definePlugin from "@utils/types";
 import { findByProps } from "@webpack";
 import { Text } from "@webpack/common";
 import { showNotification } from "@api/Notifications";
 import { localStorage } from "@utils/localStorage";
+import definePlugin from "@utils/types";
 
 interface Stream {
     streamType: string;
@@ -45,7 +45,7 @@ export default definePlugin({
     }],
     patches: [
         {
-            find: `"invite-button"`,
+            find: "\"invite-button\"",
             replacement: {
                 match: /(function .+?\(.+?\){let{inPopout:.+allowIdle.+?}=.+?\.usePreventIdle\)\("popup"\),(.+?)=\[\];if\(.+?\){.+"chat-spacer"\)\)\),\(\d,.+?\.jsx\)\(.+?,{children:).+?}}/,
                 replace: "$1[$self.renderQuestButton(),...$2]})}}"
@@ -85,7 +85,7 @@ export default definePlugin({
         }
 
         if (!getParticipants) {
-            getParticipants = findByProps("getParticipants").getParticipants
+            getParticipants = findByProps("getParticipants").getParticipants;
         }
 
         if (currentStream) {
@@ -103,6 +103,7 @@ export default definePlugin({
 
 
         const ToolTipButton = findByProps("CenterControlButton").default;
+        // eslint-disable-line
         const QuestsIcon = () => (props) => (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +117,6 @@ export default definePlugin({
                     d="M395 732c-56.667 0-109.333-9-158-27-48-18-89.667-43.333-125-76-35.333-33.333-63-72.333-83-117C9.667 467.333 0 418.667 0 366c0-53.333 9.667-102 29-146 20-44.667 47.667-83.333 83-116 35.333-33.333 77-59 125-77C285.667 9 338.333 0 395 0c57.333 0 110 9 158 27s89.667 43.667 125 77c35.333 32.667 62.667 71.333 82 116 20 44 30 92.667 30 146 0 52.667-10 101.333-30 146-19.333 44.667-46.667 83.667-82 117-35.333 32.667-77 58-125 76s-100.667 27-158 27zm229 161c-32.667 0-63-3.333-91-10-28-6-55.333-16.333-82-31-26-14.667-53.333-35-82-61-28.667-25.333-60.667-57-96-95l244-60c16 24.667 29.667 43.667 41 57 11.333 13.333 22.333 22.667 33 28 11.333 5.333 24 8 38 8 34.667 0 67-15 97-45l102 120c-50 59.333-118 89-204 89zM395 541c22 0 42.333-4 61-12 19.333-8 36-19.333 50-34 14.667-15.333 26-33.667 34-55 8-22 12-46.667 12-74s-4-51.667-12-73c-8-22-19.333-40.333-34-55-14-15.333-30.667-27-50-35-18.667-8-39-12-61-12s-42.667 4-62 12c-18.667 8-35.333 19.667-50 35-14 14.667-25 33-33 55-8 21.333-12 45.667-12 73s4 52 12 74c8 21.333 19 39.667 33 55 14.667 14.667 31.333 26 50 34 19.333 8 40 12 62 12z"
                 ></path>
             </svg>
-
         );
                 
         return (
@@ -130,13 +130,11 @@ export default definePlugin({
                 >
                 </ToolTipButton>
                 <Divider></Divider>
-
             </>
         );
     },
     openCompleteQuestUI() {
         // check if user is sharing screen and there is someone that is watching the stream 
-
         if (!StreamingUtils) {
             StreamingUtils = findByProps("encodeStreamKey")
         }
@@ -155,15 +153,12 @@ export default definePlugin({
             const HTTP = findByProps("HTTP", "getAPIBaseURL").HTTP; // rest api module
             const res = findByProps("sendHeartbeat").sendHeartbeat({ questId: quest.id, streamKey: encodedStreamKey });
         };
-
         heartBeat();
         interval = setInterval(heartBeat, 120000); // send the heartbeat each 2 minutes
-
         return;
     },
     flux: {
         STREAM_STOP: event => {
-
             const stream: Stream = StreamingUtils.decodeStreamKey(event.streamKey);
             // we check if the stream is by the current user id so we do not clear the interval without any reason.
             if (stream.ownerId === window.currentUserId && interval) {
@@ -195,7 +190,7 @@ export default definePlugin({
             if (event.userStatus.streamProgressSeconds === quest.config.streamDurationRequirementMinutes * 60) {
                 showNotification({
                     title: `${quest.config.applicationName} - Quests Completer`,
-                    body: `Quest Completed`,
+                    body: "Quest Completed",
                     ...ImagesConfig
                 });
                 clearInterval(interval);
