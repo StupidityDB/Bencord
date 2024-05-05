@@ -29,6 +29,9 @@ let interval;
 let quest;
 let questHeroBarUrl;
 let ImagesConfig = {};
+const getCurrentUserActiveStream = null; 
+const StreamingUtils = null; 
+const getParticipants = null;
 
 export default definePlugin({
     name: "QuestCompleter",
@@ -80,8 +83,13 @@ export default definePlugin({
         if (!currentStream) {
             shouldDisable = true;
         }
+
+        if (!getParticipants) {
+            getParticipants = findByProps("getParticipants").getParticipants
+        }
+
         if (currentStream) {
-            if (!findByProps("getParticipants").getParticipants(currentStream.channelId).filter(participent => participent.user.id !== window.currentUserId).length) {
+            if (!getParticipants(currentStream.channelId).filter(participent => participent.user.id !== window.currentUserId).length) {
                 shouldDisable = true;
             }
             if (currentStream?.ownerId !== window.currentUserId) {
@@ -129,6 +137,12 @@ export default definePlugin({
     openCompleteQuestUI() {
         // check if user is sharing screen and there is someone that is watching the stream 
 
+        if (!StreamingUtils) {
+            StreamingUtils = findByProps("encodeStreamKey")
+        }
+        if (!getCurrentUserActiveStream) {
+            const { getCurrentUserActiveStream } = findByProps("getCurrentUserActiveStream")
+        }
         const currentStream: Stream | null = findByProps("getCurrentUserActiveStream").getCurrentUserActiveStream();
         const encodedStreamKey = findByProps("encodeStreamKey").encodeStreamKey(currentStream);
         quest = getLeftQuests();
@@ -149,7 +163,8 @@ export default definePlugin({
     },
     flux: {
         STREAM_STOP: event => {
-            const stream: Stream = findByProps("encodeStreamKey").decodeStreamKey(event.streamKey);
+
+            const stream: Stream = StreamingUtils.decodeStreamKey(event.streamKey);
             // we check if the stream is by the current user id so we do not clear the interval without any reason.
             if (stream.ownerId === window.currentUserId && interval) {
                 clearInterval(interval);
