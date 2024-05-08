@@ -111,9 +111,10 @@ const revision = "91034ee32eff93a7cb62d10702f6b1d01e0309e6";
 const timezonesLink = `https://gist.githubusercontent.com/ArjixWasTaken/${gist}/raw/${revision}/timezones.json`;
 
 export const getAllTimezones = async (): Promise<string[]> => {
-    if (typeof Intl !== "undefined" && "supportedValuesOf" in Intl) {
+    if (typeof Intl !== "undefined" && "DateTimeFormat" in Intl) {
         try {
-            return Intl.supportedValuesOf("timeZone");
+            const timeZoneOptions = Intl.DateTimeFormat().resolvedOptions();
+            return [timeZoneOptions.timeZone];
         } catch { }
     }
 
